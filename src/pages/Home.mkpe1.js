@@ -12,6 +12,7 @@ import {
 
 
 async function fill_member_picture() {
+    console.log("blaaaaaaa2")
 	let member = await currentMember.getMember({fieldsets: [ 'FULL' ]});
 	if (member.profile.profilePhoto.url)
 		$w("#imageProfile").src = member.profile.profilePhoto.url;
@@ -19,6 +20,8 @@ async function fill_member_picture() {
 }
 
 $w.onReady(function () {
+    console.log("blaaaaaaa3")
+    return;
     wixStorage.local.clear();
     utils_set_sections_history(SECTION_STATE_LOADING);
     utils_load_history(true, "");

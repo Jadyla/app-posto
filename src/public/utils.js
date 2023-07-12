@@ -25,6 +25,11 @@ export let g_hist_map = [
 
 export const hist_filters = {"date": "#dropdownFilterDate", "transaction": "#dropdownFilterTransaction"};
 
+export const app_colors = {
+	"orange": "#F49620", 
+	"blue": "#0C2538",
+	"blue_gray_opacity": "rgba(58, 80, 96, 0.2)"
+}
 
 // -------------- fmt functions --------------------
 export function utils_fmt_money_with_prefix(value) {
@@ -47,6 +52,11 @@ export function utils_fmt_money(val) { // receive in cents or in string in Local
         val = (parseInt(val)/100).toLocaleString(undefined, {minimumFractionDigits: 2});
 
     return is_negative ? "-" + val : val;
+}
+
+export function utils_fmt_money_prefix_to_cents(value) {
+	let amount_cents = parseFloat(value.replace("R$ ", "")) * 100;
+	return amount_cents;
 }
 
 export function utils_fmt_strip_non_digits(value) {

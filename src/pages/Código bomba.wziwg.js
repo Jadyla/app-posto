@@ -52,9 +52,8 @@ function onclick_bomba_selected(event) {
     });
 
     get_bomba_suggestion(); // to update the suggestions
+    save_to_local_storage(cod_bomba);
     $w("#buttonCodBombaAvancar").enable();
-
-    wixStorage.local.setItem('cod_bomba_value', JSON.stringify(cod_bomba));
 }
 
 async function get_bomba_suggestion() {
@@ -79,10 +78,26 @@ async function get_bomba_suggestion() {
         set_sections(SECTION_STATE_NO_DATA);
 }
 
+async function save_to_local_storage(cod_bomba) {
+    let bomba_informations = (await be_mod_utils_get_bombas_code(cod_bomba))[0];
+    wixStorage.local.setItem('bomba_information', JSON.stringify(bomba_informations));
+}
+
+function render_values() {
+    let cod_bomba = JSON.parse(wixStorage.local.getItem('bomba_information')).codBomba;
+    if (cod_bomba) {
+        Array.from(cod_bomba).forEach((char, index) => {
+            $w(map_bombas[`bomba${index + 1}`]).value = char;
+        });
+    }
+    get_bomba_suggestion();
+}
+
 $w.onReady(function () {
     set_sections (SECTION_STATE_LOADING);
     get_bomba_suggestion();
     utils_config_items($w, g_codigo_bomba);
+    render_values()
     // Write your JavaScript here
 
     // To select an element by ID use: $w('#elementID')

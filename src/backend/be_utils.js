@@ -1,4 +1,9 @@
-const BD_TRANSACAO = "";
+import wixData from 'wix-data';
+
+export const BD_TRANSACOES = "transacoes";
+export const BD_CLIENTE = "cliente";
+export const BD_POSTOS = "postos";
+export const BD_BOMBAS = "bombas";
 
 const hist_filter_transaction = ["cashback", "pagamento"];
 const hist_filter_period = {"semana": 7, "quinzena": 15, "mes": 30, "trimestre": 90};
@@ -41,25 +46,6 @@ const json_test5 = {
     "tipo": "pagamento_saldo",
     "db": "74,00",
     "nome": "Posto Caconde"
-}
-
-const json_test_bombas = {
-    "_id": "1",
-    "cod_bomba": "11111",
-    "id_posto": "17"
-}
-
-const json_test_bombas2 = {
-    "_id": "2",
-    "cod_bomba": "11121",
-    "id_posto": "17"
-}
-
-const json_test_posto = {
-    "_id": "17",
-    "nome": "Posto Caldas",
-    "endereco": "Rua Jose, 92 - Congonhas, Caldas",
-    "img_posto": ""
 }
 
 
@@ -105,30 +91,50 @@ export async function be_utils_get_history(_filter) {
 // TODO: add the logic to catch all information from database
 // and remove all 'json_test'
 export async function be_utils_get_bombas_code (code_bomba) {
-    // DATABASE: return: cod_bomba, nome_posto, img_posto, endereco_posto
-    let bombas = [];
-    bombas.push(json_test_bombas);
-    bombas.push(json_test_bombas2);
-
-    let postos = [];
-    postos.push(json_test_posto);
+    let bombas = await wixData.query(BD_BOMBAS).find({suppressAuth: true})
+                        .then((results) => {
+                            return results["items"];
+                        })
+    let postos = await wixData.query(BD_POSTOS).find()
+                        .then((results) => {
+                            return results["items"];
+                        })
 
     let possible_bombas = bombas.filter(bomba => {
         return !Array.from(code_bomba).some((char, i) => {
-          return char !== '-' && char !== bomba.cod_bomba[i];
+            return char !== '-' && char !== bomba.codBomba[i];
         });
     });
 
     let posto_and_bomba_informations = possible_bombas.map(bomba => {
-        let posto = postos.find(posto => posto._id === bomba.id_posto);
+        let posto = postos.find(posto => posto.postoId === bomba.postoId);
         return {...bomba,
-                cod_bomba: bomba.cod_bomba,
-                cod_e_posto: bomba.cod_bomba + " - " + posto.nome,
-                img_posto: posto.img_posto,
-                endereco_posto: posto.endereco
+                cod_e_posto: bomba.codBomba + " - " + posto.nome,
+                img_posto: posto.imgLogo ? posto.imgLogo : "",
+                endereco_posto: posto.endereco ? posto.endereco : ""
             };
     });
 
-    // returns {_id, cod_bomba, id_posto, nome_posto, img_posto, endereco_posto}
+    // returns [{_id, postoId, codBomba, cod_e_posto, img_posto, endereco_posto}]
     return posto_and_bomba_informations;
+}
+
+export async function be_utils_get_saldo() {
+    return 100;
+}
+
+// -------------- database insert functions --------------------
+export async function be_utils_cadastrar_transacao(transacao) {
+    wixData.insert(BD_TRANSACOES, transacao)
+    .then((result) => {
+      const itemInserido = result;
+      console.log(itemInserido);
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+export function be_mod_utils_cadastrar_cliente(cliente) {
+    console.log("cliente: ", cliente);
 }
