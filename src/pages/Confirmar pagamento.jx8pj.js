@@ -75,7 +75,7 @@ function set_resume_values(is_cashback, value) {
         $w("#textUsarSaldoResume").text = "- " + utils_fmt_money_with_prefix(value);
         let valor_a_pagar = utils_fmt_money_prefix_to_cents(valor_abastecimento) - value;
         $w("#textValorAPagar").text = utils_fmt_money_with_prefix(valor_a_pagar);
-        tipo_de_pagamento = "saldo";
+        tipo_de_pagamento = "pagamento_saldo";
     }
     $w("#buttonConfirmarPagamentoAvancar").enable();
 }
@@ -98,7 +98,7 @@ async function onclick_confirmar_pagamento() {
         tipo: tipo_de_pagamento,
         tipoCombustivel: tipo_combustivel,
         valor: utils_fmt_money_prefix_to_cents(valor_abastecimento),
-        valorTipo: tipo_de_pagamento == "cashback" ? calculate_caskback_value() : saldo,
+        valorTipo: tipo_de_pagamento == "cashback" ? calculate_caskback_value() : (saldo * -1),
     };
 
     be_mod_utils_cadastrar_transacao(transacao);

@@ -19,9 +19,10 @@ const QTDE_ITENS_RESUMO = 2; // max number of transactions on resume
 export let g_hist_map = [
 	{ui: "#textHistDate", db: "data", type: "text", format: utils_fmt_date},
 	{ui: "#imageHist", db: "tipo", type: "src", format: utils_fmt_history_img},
-	{ui: "#textHistValue", db: "db", type: "text", format: utils_fmt_money_with_prefix},
+	{ui: "#textHistValue", db: "db", type: "html", format: utils_fmt_hist_value},
 	{ui: "#textHistDesc", db: "nome", type: "text"},
-	{ui: "#textHistPaymentType", db: "tipo", type: "text", format: utils_fmt_history_type}
+	{ui: "#textHistPaymentType", db: "tipo", type: "text", format: utils_fmt_history_type},
+	{ui: "#textHistTotalValue", db: "total", type: "text", format: utils_fmt_hist_total_value}
 ];
 
 export const hist_filters = {"date": "#dropdownFilterDate", "transaction": "#dropdownFilterTransaction"};
@@ -29,13 +30,26 @@ export const hist_filters = {"date": "#dropdownFilterDate", "transaction": "#dro
 export const app_colors = {
 	"orange": "#F49620", 
 	"blue": "#0C2538",
-	"blue_gray_opacity": "rgba(58, 80, 96, 0.2)"
+	"blue_gray_opacity": "rgba(58, 80, 96, 0.2)",
+	"red": "#E35D3D"
 }
 
 // -------------- fmt functions --------------------
 export function utils_fmt_money_with_prefix(value) {
 	value = utils_fmt_money(value);
 	return "R$ " + (value || "0,00")
+}
+
+export function utils_fmt_hist_value(value) {
+	let fmt_value = utils_fmt_money_with_prefix(value);
+	let amount = fmt_value.includes("-") ? fmt_value.replace('-', '') : fmt_value;
+	if (value < 0)
+		return `<h4 style="color:${app_colors.red};" class="wixui-rich-text__text">- ${amount}</h4>`
+	return `<h4 class="wixui-rich-text__text">+ ${amount}</h4>`
+}
+
+export function utils_fmt_hist_total_value(value) {
+	return "Valor abastecimento: " + utils_fmt_money_with_prefix(value);
 }
 
 export function utils_fmt_money(val) { // receive in cents or in string in Locale
@@ -95,6 +109,10 @@ export function utils_fmt_only_number(val) {
 	if (parseInt(val[0])){
 		return val[0];
 	}
+}
+
+export async function utils_fmt_saldo() {
+	$w("#textSaldoEmConta").text = utils_fmt_money_with_prefix(await utils_get_saldo());
 }
 
 

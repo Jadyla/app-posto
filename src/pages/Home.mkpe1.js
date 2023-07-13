@@ -7,14 +7,12 @@ import {
     utils_set_sections_history,
     utils_load_history,
     utils_get_member,
-    utils_fmt_money_with_prefix,
-    utils_get_saldo,
+    utils_fmt_saldo,
     SECTION_STATE_LOADING,
 } from 'public/utils';
 
 import {
     be_mod_utils_cadastrar_cliente,
-    be_mod_utils_get_saldo,
 } from "backend/be_mod_utils";
 
 
@@ -23,7 +21,7 @@ async function fill_member_data() {
 	if (member.profile.profilePhoto)
 		$w("#imageProfile").src = member.profile.profilePhoto.url;
 	$w("#textOlaNome").text = `Olá, ${member.contactDetails.firstName}`;
-    $w("#textSaldoEmConta").text = utils_fmt_money_with_prefix(await utils_get_saldo());
+    utils_fmt_saldo();
 }
 
 async function query_database() {
