@@ -1,4 +1,5 @@
-import { be_mod_utils_get_history } from "backend/be_mod_utils";
+import { currentMember } from 'wix-members';
+import { be_mod_utils_get_history, be_mod_utils_get_saldo } from "backend/be_mod_utils";
 
 const IMG_PAGAMENTO_SALDO = "https://static.wixstatic.com/media/88a711_9162dc18460547c794940a110eae3acd~mv2.png";
 const IMG_CASHBACK = "https://static.wixstatic.com/media/88a711_d7f511ac9b884bbca345e15d9d1703fa~mv2.png";
@@ -183,8 +184,10 @@ export async function utils_load_history(_is_resumed, _filter) {
         utils_config_items($item, g_hist_map, itemData);
         utils_set_sections_history(SECTION_STATE_DATA);
     });
+
+	let member = await utils_get_member();
     
-    let history = (await be_mod_utils_get_history(_filter));
+    let history = (await be_mod_utils_get_history(_filter, member._id));
 
 	if(_is_resumed)
     	history = history.length >= QTDE_ITENS_RESUMO ? history.slice(0 , QTDE_ITENS_RESUMO) : history; // limits items on resume
@@ -204,6 +207,18 @@ export function utils_get_elements_values(map_elements) {
 	}
 
 	return _filter;
+}
+
+export async function utils_get_member() {
+	let member = await currentMember.getMember({fieldsets: [ 'FULL' ]});
+	return member;
+}
+
+export async function  utils_get_saldo() {
+	let member = await currentMember.getMember({fieldsets: [ 'FULL' ]});
+	let saldo = await be_mod_utils_get_saldo(member._id);
+
+	return saldo;
 }
 
 

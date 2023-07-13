@@ -9,13 +9,14 @@ import {
     utils_fmt_money_with_prefix,
     utils_config_items,
     utils_show_hide_section,
+    utils_get_saldo,
+    utils_get_member,
     app_colors,
     SECTION_STATE_LOADING,
     SECTION_STATE_DATA,
 } from "public/utils";
 
 import {
-    be_mod_utils_get_saldo,
     be_mod_utils_cadastrar_transacao,
 } from "backend/be_mod_utils";
 
@@ -41,8 +42,8 @@ let g_confirmar_pagamento = [
 ];
 
 
-async function get_saldo() {
-    let saldo = await be_mod_utils_get_saldo();
+async function set_saldo() {
+    let saldo = await utils_get_saldo();
     $w("#textUsarSaldoDescontar").text = "Descontar " + utils_fmt_money_with_prefix(saldo);
 }
 
@@ -52,7 +53,7 @@ function calculate_caskback_value() {
 }
 
 async function onclick_usar_saldo() {
-    set_resume_values(false, await be_mod_utils_get_saldo());
+    set_resume_values(false, await utils_get_saldo());
 }
 
 function onclick_acumular_cashback() { 
@@ -88,14 +89,18 @@ function set_sections(state) {
     }
 }
 
-function onclick_confirmar_pagamento() {
+async function onclick_confirmar_pagamento() {
+    let member = await utils_get_member();
+    let saldo = await utils_get_saldo();
     let transacao = {
-        clienteId: "testeteste",
+        clienteId: member._id,
         postoId: posto_id,
         tipo: tipo_de_pagamento,
         tipoCombustivel: tipo_combustivel,
-        valor: utils_fmt_money_prefix_to_cents(valor_abastecimento)
+        valor: utils_fmt_money_prefix_to_cents(valor_abastecimento),
+        valorTipo: tipo_de_pagamento == "cashback" ? calculate_caskback_value() : saldo,
     };
+
     be_mod_utils_cadastrar_transacao(transacao);
     set_sections(SECTION_STATE_LOADING);
     wixLocation.to("/acesso")
@@ -104,7 +109,7 @@ function onclick_confirmar_pagamento() {
 $w.onReady(function () {
     set_sections(SECTION_STATE_DATA);
     utils_config_items($w, g_confirmar_pagamento);
-    get_saldo();
+    set_saldo();
     // Write your JavaScript here
 
     // To select an element by ID use: $w('#elementID')

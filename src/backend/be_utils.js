@@ -51,7 +51,7 @@ const json_test5 = {
 
 // TODO: add the logic to catch all information from database
 // and remove all 'json_test'
-export async function be_utils_get_history(_filter) {
+export async function be_utils_get_history(_filter, member_id) {
     let hist = [];
     hist.push(json_test);
     hist.push(json_test2);
@@ -85,6 +85,7 @@ export async function be_utils_get_history(_filter) {
 
     }
 
+    // returns [{_id, data, tipo, db, nome}, ...]
     return hist.reverse();
 }
 
@@ -119,8 +120,10 @@ export async function be_utils_get_bombas_code (code_bomba) {
     return posto_and_bomba_informations;
 }
 
-export async function be_utils_get_saldo() {
-    return 100;
+export async function be_utils_get_saldo(cliente_id) {
+    let saldo = (await search_cliente(cliente_id))["items"][0]["saldo"];
+
+    return saldo;
 }
 
 // -------------- database insert functions --------------------
@@ -133,8 +136,51 @@ export async function be_utils_cadastrar_transacao(transacao) {
     .catch((error) => {
       console.error(error);
     });
+
+    update_client_saldo(transacao.clienteId, transacao.valorTipo, transacao.tipo);
 }
 
-export function be_mod_utils_cadastrar_cliente(cliente) {
-    console.log("cliente: ", cliente);
+export async function be_utils_cadastrar_cliente(cliente) {
+    let cliente_on_database = await search_cliente(cliente._id);
+    if (cliente_on_database["length"])
+        return cliente_on_database["items"][0];
+    else{
+        let cliente_db = {
+            _id: cliente._id,
+            nome: cliente.contactDetails.firstName + " " + cliente.contactDetails.lastName,
+            email: cliente.contactDetails.email,
+            saldo: 0
+        }
+        await wixData.insert(BD_CLIENTE, cliente_db)
+        .then((result) => {
+            const itemInserido = result;
+            console.log(itemInserido);
+        })
+        .catch((error) => {
+            console.error(error);
+        });
+    }
+    
+    return
+}
+
+
+// -------------- internal functions --------------------
+async function search_cliente(cliente_id) {
+    return await wixData.query(BD_CLIENTE)
+                .eq("_id", cliente_id)
+                .find()
+                .then((results) => {
+                        return results;
+                })
+}
+
+async function update_client_saldo(cliente_id, valor_tipo, tipo) {
+    const item = await wixData.get(BD_CLIENTE, cliente_id);
+    if (tipo == "cashback")
+        item.saldo += valor_tipo;
+    else
+        item.saldo -= valor_tipo;
+    
+    await wixData.update(BD_CLIENTE, item);
 }
