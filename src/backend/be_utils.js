@@ -9,19 +9,21 @@ const hist_filter_transaction = ["cashback", "pagamento"];
 const hist_filter_period = {"semana": 7, "quinzena": 15, "mes": 30, "trimestre": 90};
 
 
+// -------------- database query functions --------------------
 export async function be_utils_get_history(_filter, member_id) {
     const _filter_date = _filter["date"]
     const filter_transaction = _filter["transaction"]
 
     let transacoes = await wixData.query(BD_TRANSACOES)
-                .eq("clienteId", member_id)
-                .find({suppressAuth: true})
-                .then((results) => {
-                        return results["items"];
-                })
+                            .eq("clienteId", member_id)
+                            .find({suppressAuth: true})
+                            .then((results) => {
+                                return results["items"];
+                            })
 
-    let postos = await wixData.query(BD_POSTOS).find({suppressAuth: true})
-                       .then((results) => {
+    let postos = await wixData.query(BD_POSTOS)
+                        .find({suppressAuth: true})
+                        .then((results) => {
                             return results["items"];
                         })
 
@@ -62,8 +64,6 @@ export async function be_utils_get_history(_filter, member_id) {
     return hist;
 }
 
-// TODO: add the logic to catch all information from database
-// and remove all 'json_test'
 export async function be_utils_get_bombas_code (code_bomba) {
     let bombas = await wixData.query(BD_BOMBAS).find({suppressAuth: true})
                         .then((results) => {
@@ -94,27 +94,28 @@ export async function be_utils_get_bombas_code (code_bomba) {
 }
 
 export async function be_utils_get_saldo(cliente_id) {
-    let saldo = (await search_cliente(cliente_id))["items"][0]["saldo"];
+    let saldo = (await get_client_infos(cliente_id))["items"][0]["saldo"];
 
     return saldo;
 }
+
 
 // -------------- database insert functions --------------------
 export async function be_utils_cadastrar_transacao(transacao) {
     wixData.insert(BD_TRANSACOES, transacao)
     .then((result) => {
-      const itemInserido = result;
-      console.log(itemInserido);
+        const itemInserido = result;
+        console.log(itemInserido);
     })
     .catch((error) => {
-      console.error(error);
+        console.error(error);
     });
 
     update_client_saldo(transacao.clienteId, transacao.valorTipo, transacao.tipo);
 }
 
 export async function be_utils_cadastrar_cliente(cliente) {
-    let cliente_on_database = await search_cliente(cliente._id);
+    let cliente_on_database = await get_client_infos(cliente._id);
     if (cliente_on_database["length"])
         return cliente_on_database["items"][0];
     else{
@@ -139,21 +140,18 @@ export async function be_utils_cadastrar_cliente(cliente) {
 
 
 // -------------- internal functions --------------------
-async function search_cliente(cliente_id) {
+async function get_client_infos(cliente_id) {
     return await wixData.query(BD_CLIENTE)
                 .eq("_id", cliente_id)
                 .find({suppressAuth: true})
                 .then((results) => {
-                        return results;
+                    return results;
                 })
 }
 
 async function update_client_saldo(cliente_id, valor_tipo, tipo) {
     const item = await wixData.get(BD_CLIENTE, cliente_id);
-    //if (tipo == "cashback")
-        item.saldo += valor_tipo;
-    //else
-    //    item.saldo -= valor_tipo;
+    item.saldo += valor_tipo;
     
     await wixData.update(BD_CLIENTE, item);
 }
