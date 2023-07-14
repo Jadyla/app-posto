@@ -5,6 +5,7 @@ import {
 	be_utils_get_saldo,
 	be_utils_cadastrar_cliente,
 	be_utils_get_pending_transactions,
+	be_utils_get_transaction_detail,
 } from 'backend/be_utils.js';
 
 
@@ -30,4 +31,8 @@ export function be_mod_utils_cadastrar_cliente(cliente) {
 
 export function be_mod_utils_get_pending_transactions(transaction_situation) {
 	return be_utils_get_pending_transactions(transaction_situation);
+}
+
+export function be_mod_utils_get_transaction_detail (transaction_id) {
+	return be_utils_get_transaction_detail(transaction_id);
 }

@@ -122,6 +122,32 @@ export async function be_utils_get_pending_transactions(transaction_situation) {
     return transacoes_infos;
 }
 
+export async function be_utils_get_transaction_detail(transaction_id) {
+    let transacao = await wixData.query(BD_TRANSACOES)
+        .eq("_id", transaction_id)
+        .find({suppressAuth: true})
+        .then((results) => {
+            return results["items"][0];
+    })
+    let cliente = (await get_client_infos(transacao.clienteId))["items"][0];
+
+    let selected_transaction_information = {
+        nome: cliente.nome,
+        tipo_combustivel: transacao.tipoCombustivel,
+        cod_bomba: transacao.codBomba,
+        data: transacao._createdDate,
+        hora: "",
+        valor: transacao.valor,
+        is_cashback: transacao.tipo == "cashback" ? true : false,
+        saldo_usado: transacao.tipo == "cashback" ? 0 : transacao.valorTipo,
+        valor_a_pagar: transacao.tipo == "cashback" ? transacao.valor : transacao.valor + transacao.valorTipo,
+    }
+
+    // return [{nome, tipo_combustivel, cod_bomba, data, hora, valor, is_cashback, saldo_usado, valor_a_pagar}]
+
+    return selected_transaction_information;
+}
+
 
 // -------------- database insert functions --------------------
 export async function be_utils_cadastrar_transacao(transacao) {

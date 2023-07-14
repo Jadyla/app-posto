@@ -11,6 +11,7 @@ import {
 
 import {
     be_mod_utils_get_pending_transactions,
+    be_mod_utils_get_transaction_detail,
 } from "backend/be_mod_utils";
 
 
@@ -31,8 +32,10 @@ function fmt_valor_a_pagar(val) {
     return "Valor a pagar: " + utils_fmt_money_with_prefix(val);
 }
 
-async function onclick_ver_detalhes() {
-    wixWindow.openLightbox("Janela Aprovar (interno)");
+async function onclick_ver_detalhes(event) {
+    let id_transacao = event.context.itemId;
+    let transacao_info = await get_transaction_selected_information(id_transacao);
+    wixWindow.openLightbox("Janela Aprovar (interno)", transacao_info);
 }
 
 async function load_pending_transactions() {
@@ -44,6 +47,13 @@ async function load_pending_transactions() {
 
     $w("#repeaterTransacoesPendentes").data = transacoes_pendentes;
 }
+
+async function get_transaction_selected_information(transaction_id) {
+    let transacao_detail = await be_mod_utils_get_transaction_detail(transaction_id);
+
+    return transacao_detail;
+}
+
 
 $w.onReady(function () {
     load_pending_transactions();
