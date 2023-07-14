@@ -15,12 +15,12 @@ export async function be_utils_get_history(_filter, member_id) {
 
     let transacoes = await wixData.query(BD_TRANSACOES)
                 .eq("clienteId", member_id)
-                .find()
+                .find({suppressAuth: true})
                 .then((results) => {
                         return results["items"];
                 })
 
-    let postos = await wixData.query(BD_POSTOS).find()
+    let postos = await wixData.query(BD_POSTOS).find({suppressAuth: true})
                        .then((results) => {
                             return results["items"];
                         })
@@ -69,7 +69,7 @@ export async function be_utils_get_bombas_code (code_bomba) {
                         .then((results) => {
                             return results["items"];
                         })
-    let postos = await wixData.query(BD_POSTOS).find()
+    let postos = await wixData.query(BD_POSTOS).find({suppressAuth: true})
                         .then((results) => {
                             return results["items"];
                         })
@@ -142,7 +142,7 @@ export async function be_utils_cadastrar_cliente(cliente) {
 async function search_cliente(cliente_id) {
     return await wixData.query(BD_CLIENTE)
                 .eq("_id", cliente_id)
-                .find()
+                .find({suppressAuth: true})
                 .then((results) => {
                         return results;
                 })
