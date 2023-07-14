@@ -13,6 +13,10 @@ export const SECTION_STATE_LOADING="loading";	// loading
 export const SECTION_STATE_DATA="data";			// true for transactions
 export const SECTION_STATE_NO_DATA="no_data";	// empty (no transactions)
 
+export const TRANSACAO_PENDENTE = "pendente";
+export const TRANSACAO_APROVADA = "aprovada";
+export const TRANSACAO_RECUSADA = "recusada";
+
 const QTDE_ITENS_RESUMO = 2; // max number of transactions on resume
 
 // transaction history repeater: constant on utils to be used by 'Extrato' and 'Home' pages

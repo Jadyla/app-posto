@@ -14,6 +14,7 @@ import {
     app_colors,
     SECTION_STATE_LOADING,
     SECTION_STATE_DATA,
+    TRANSACAO_PENDENTE,
 } from "public/utils";
 
 import {
@@ -28,6 +29,7 @@ let tipo_combustivel = abastecer_values.tipo_combustivel;
 
 let bomba_information = JSON.parse(wixStorage.local.getItem('bomba_information'));
 let posto_id = bomba_information.postoId;
+let cod_bomba = bomba_information.codBomba;
 
 let tipo_de_pagamento;
 
@@ -99,6 +101,8 @@ async function onclick_confirmar_pagamento() {
         tipoCombustivel: tipo_combustivel,
         valor: utils_fmt_money_prefix_to_cents(valor_abastecimento),
         valorTipo: tipo_de_pagamento == "cashback" ? calculate_caskback_value() : (saldo * -1),
+        situacao: TRANSACAO_PENDENTE,
+        codBomba: cod_bomba,
     };
 
     be_mod_utils_cadastrar_transacao(transacao);

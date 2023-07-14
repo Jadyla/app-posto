@@ -99,6 +99,29 @@ export async function be_utils_get_saldo(cliente_id) {
     return saldo;
 }
 
+export async function be_utils_get_pending_transactions(transaction_situation) {
+    let transacoes = await wixData.query(BD_TRANSACOES)
+                            .eq("situacao", transaction_situation)
+                            .find({suppressAuth: true})
+                            .then((results) => {
+                                return results["items"];
+                            });
+    
+    let transacoes_infos = await Promise.all(transacoes.map(async (transacao) => {
+        let cliente = (await get_client_infos(transacao.clienteId))["items"][0];
+        return {
+            "_id": transacao._id,
+            "client_name": cliente.nome,
+            "cod_bomba": transacao.codBomba,
+            "data": transacao._createdDate,
+            "valor_a_pagar": transacao.tipo == "cashback" ? transacao.valor : transacao.valor + transacao.valorTipo,
+        };
+    }));
+
+    // return [{client_name, cod_bomba, data, valor_a_pagar}, ...]
+    return transacoes_infos;
+}
+
 
 // -------------- database insert functions --------------------
 export async function be_utils_cadastrar_transacao(transacao) {
