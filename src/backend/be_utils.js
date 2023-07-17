@@ -99,9 +99,9 @@ export async function be_utils_get_saldo(cliente_id) {
     return saldo;
 }
 
-export async function be_utils_get_pending_transactions(transaction_situation) {
+export async function be_utils_get_pending_transactions(transaction_status) {
     let transacoes = await wixData.query(BD_TRANSACOES)
-                            .eq("situacao", transaction_situation)
+                            .eq("situacao", transaction_status)
                             .find({suppressAuth: true})
                             .then((results) => {
                                 return results["items"];
@@ -132,11 +132,11 @@ export async function be_utils_get_transaction_detail(transaction_id) {
     let cliente = (await get_client_infos(transacao.clienteId))["items"][0];
 
     let selected_transaction_information = {
+        _id: transacao._id,
         nome: cliente.nome,
         tipo_combustivel: transacao.tipoCombustivel,
         cod_bomba: transacao.codBomba,
         data: transacao._createdDate,
-        hora: "",
         valor: transacao.valor,
         is_cashback: transacao.tipo == "cashback" ? true : false,
         saldo_usado: transacao.tipo == "cashback" ? 0 : transacao.valorTipo,
@@ -185,6 +185,18 @@ export async function be_utils_cadastrar_cliente(cliente) {
     }
     
     return
+}
+
+
+// -------------- database insert functions --------------------
+export async function be_utils_update_transaction(transaction_id, transaction_status) {
+    //transaction_status = "aprovada" || "recusada"
+    const item = await wixData.get(BD_TRANSACOES, transaction_id);
+    item.situacao = transaction_status;
+
+    await wixData.update(BD_TRANSACOES, item);
+
+    return true;
 }
 
 
