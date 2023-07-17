@@ -24,7 +24,7 @@ import {
 const porcentagem_cashback = 0.05;
 
 let abastecer_values = JSON.parse(wixStorage.local.getItem('abastecer_values'));
-let valor_abastecimento = abastecer_values.valor;
+let valor_abastecimento = utils_fmt_money_prefix_to_cents(abastecer_values.valor);
 let tipo_combustivel = abastecer_values.tipo_combustivel;
 
 let bomba_information = JSON.parse(wixStorage.local.getItem('bomba_information'));
@@ -34,10 +34,10 @@ let cod_bomba = bomba_information.codBomba;
 let tipo_de_pagamento;
 
 let g_confirmar_pagamento = [
-    {ui: "#textValorAbastecer", type: "text", raw: valor_abastecimento},
+    {ui: "#textValorAbastecer", type: "text", raw: utils_fmt_money_with_prefix(valor_abastecimento)},
     {ui: "#textTipoCombustivel", type: "text", raw: tipo_combustivel},
     {ui: "#textCashback", type: "text", raw: "Ganhar " + utils_fmt_money_with_prefix(calculate_caskback_value())},
-    {ui: "#textValorTotalResume", type: "text", raw: valor_abastecimento},
+    {ui: "#textValorTotalResume", type: "text", raw: utils_fmt_money_with_prefix(valor_abastecimento)},
     {ui: "#boxUsarSaldo", onClick: onclick_usar_saldo},
     {ui: "#boxCashback", onClick: onclick_acumular_cashback},
     {ui: "#buttonConfirmarPagamentoAvancar", onClick: onclick_confirmar_pagamento}
@@ -46,16 +46,18 @@ let g_confirmar_pagamento = [
 
 async function set_saldo() {
     let saldo = await utils_get_saldo();
+    if (saldo > valor_abastecimento)
+        saldo = valor_abastecimento;
     $w("#textUsarSaldoDescontar").text = "Descontar " + utils_fmt_money_with_prefix(saldo);
 }
 
 function calculate_caskback_value() {
-    let cashback = utils_fmt_money_prefix_to_cents(valor_abastecimento) * porcentagem_cashback;
+    let cashback = valor_abastecimento * porcentagem_cashback;
     return cashback;
 }
 
 async function onclick_usar_saldo() {
-    set_resume_values(false, await utils_get_saldo());
+    set_resume_values(false, await check_saldo());
 }
 
 function onclick_acumular_cashback() { 
@@ -68,14 +70,14 @@ function set_resume_values(is_cashback, value) {
         $w("#boxCashback").style.borderColor = app_colors.orange;
         $w("#textCashbackResume").text = "+ " + utils_fmt_money_with_prefix(calculate_caskback_value());
         $w("#textUsarSaldoResume").text = "- " + utils_fmt_money_with_prefix(0);
-        $w("#textValorAPagar").text = valor_abastecimento;
+        $w("#textValorAPagar").text = utils_fmt_money_with_prefix(valor_abastecimento);
         tipo_de_pagamento = "cashback";
     } else {
         $w("#boxUsarSaldo").style.borderColor = app_colors.orange;
         $w("#boxCashback").style.borderColor = app_colors.blue_gray_opacity;
         $w("#textCashbackResume").text = "+ " + utils_fmt_money_with_prefix(0);
         $w("#textUsarSaldoResume").text = "- " + utils_fmt_money_with_prefix(value);
-        let valor_a_pagar = utils_fmt_money_prefix_to_cents(valor_abastecimento) - value;
+        let valor_a_pagar = valor_abastecimento - value;
         $w("#textValorAPagar").text = utils_fmt_money_with_prefix(valor_a_pagar);
         tipo_de_pagamento = "pagamento_saldo";
     }
@@ -91,16 +93,22 @@ function set_sections(state) {
     }
 }
 
+async function check_saldo() {
+    let saldo = await utils_get_saldo();
+    if (saldo <= valor_abastecimento)
+        return (saldo * -1);
+    return valor_abastecimento;
+}
+
 async function onclick_confirmar_pagamento() {
     let member = await utils_get_member();
-    let saldo = await utils_get_saldo();
     let transacao = {
         clienteId: member._id,
         postoId: posto_id,
         tipo: tipo_de_pagamento,
         tipoCombustivel: tipo_combustivel,
-        valor: utils_fmt_money_prefix_to_cents(valor_abastecimento),
-        valorTipo: tipo_de_pagamento == "cashback" ? calculate_caskback_value() : (saldo * -1),
+        valor: valor_abastecimento,
+        valorTipo: tipo_de_pagamento == "cashback" ? calculate_caskback_value() : (await check_saldo() * -1),
         situacao: TRANSACAO_PENDENTE,
         codBomba: cod_bomba,
     };
