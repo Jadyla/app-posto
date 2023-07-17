@@ -53,7 +53,6 @@ function onclick_bomba_selected(event) {
 
     get_bomba_suggestion(); // to update the suggestions
     save_to_local_storage(cod_bomba);
-    $w("#buttonCodBombaAvancar").enable();
 }
 
 async function get_bomba_suggestion() {
@@ -79,8 +78,10 @@ async function get_bomba_suggestion() {
 }
 
 async function save_to_local_storage(cod_bomba) {
-    let bomba_informations = (await be_mod_utils_get_bombas_code(cod_bomba))[0];
-    wixStorage.local.setItem('bomba_information', JSON.stringify(bomba_informations));
+    be_mod_utils_get_bombas_code(cod_bomba).then((bomba_informations) => {
+        wixStorage.local.setItem('bomba_information', JSON.stringify(bomba_informations[0]));
+        $w("#buttonCodBombaAvancar").enable();
+    });
 }
 
 function render_values() {
