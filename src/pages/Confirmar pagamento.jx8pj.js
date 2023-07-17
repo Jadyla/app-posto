@@ -105,9 +105,11 @@ async function onclick_confirmar_pagamento() {
         codBomba: cod_bomba,
     };
 
-    be_mod_utils_cadastrar_transacao(transacao);
-    set_sections(SECTION_STATE_LOADING);
-    wixLocation.to("/acesso")
+    be_mod_utils_cadastrar_transacao(transacao).then((transacao_id) => {
+        const urlComId = `/aguardando?id=${transacao_id}`;
+        set_sections(SECTION_STATE_LOADING);
+        wixLocation.to(urlComId);
+    });
 }
 
 $w.onReady(function () {

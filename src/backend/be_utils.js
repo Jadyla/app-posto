@@ -141,6 +141,7 @@ export async function be_utils_get_transaction_detail(transaction_id) {
         is_cashback: transacao.tipo == "cashback" ? true : false,
         saldo_usado: transacao.tipo == "cashback" ? 0 : transacao.valorTipo,
         valor_a_pagar: transacao.tipo == "cashback" ? transacao.valor : transacao.valor + transacao.valorTipo,
+        situacao: transacao.situacao,
     }
 
     // return [{nome, tipo_combustivel, cod_bomba, data, hora, valor, is_cashback, saldo_usado, valor_a_pagar}]
@@ -151,16 +152,17 @@ export async function be_utils_get_transaction_detail(transaction_id) {
 
 // -------------- database insert functions --------------------
 export async function be_utils_cadastrar_transacao(transacao) {
-    wixData.insert(BD_TRANSACOES, transacao)
+    update_client_saldo(transacao.clienteId, transacao.valorTipo, transacao.tipo);
+    return wixData.insert(BD_TRANSACOES, transacao)
     .then((result) => {
         const itemInserido = result;
         console.log(itemInserido);
+        return result._id;
     })
     .catch((error) => {
         console.error(error);
     });
 
-    update_client_saldo(transacao.clienteId, transacao.valorTipo, transacao.tipo);
 }
 
 export async function be_utils_cadastrar_cliente(cliente) {
